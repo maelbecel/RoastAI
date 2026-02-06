@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
 import os
@@ -6,18 +6,16 @@ import tempfile
 import pdfplumber
 from werkzeug.utils import secure_filename
 
-# --------------------------------------------------
-# App setup (IMPORTANT pour Vercel)
-# --------------------------------------------------
+# ------------------------------
+# App setup
+# ------------------------------
 
 app = Flask(__name__)
 CORS(app)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 
-# --------------------------------------------------
+# ------------------------------
 # Gemini configuration
-# --------------------------------------------------
+# ------------------------------
 
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -27,13 +25,12 @@ if GOOGLE_API_KEY:
 else:
     model = None
 
-# --------------------------------------------------
+# ------------------------------
 # PDF extraction
-# --------------------------------------------------
+# ------------------------------
 
 def extract_text_from_pdf(pdf_path):
     text = ""
-
     try:
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
@@ -42,12 +39,11 @@ def extract_text_from_pdf(pdf_path):
                     text += page_text + "\n"
     except Exception as e:
         print(f"Erreur lecture PDF: {e}")
-
     return text.strip()
 
-# --------------------------------------------------
+# ------------------------------
 # Roast generation
-# --------------------------------------------------
+# ------------------------------
 
 def generate_roast_from_text(profile_text):
     if not model:
@@ -74,17 +70,12 @@ Aucun préambule. Génère uniquement le roast.
         print(f"Erreur Gemini: {e}")
         return "Même l'IA a levé les yeux au ciel en lisant ce profil."
 
-# --------------------------------------------------
-# Routes
-# --------------------------------------------------
-
-@app.route("/")
-def index():
-    return send_from_directory(PUBLIC_DIR, "index.html")
+# ------------------------------
+# Routes API
+# ------------------------------
 
 @app.route("/api/roast", methods=["POST"])
 def roast():
-
     if "file" not in request.files:
         return jsonify({"success": False, "error": "PDF requis"}), 400
 
@@ -102,30 +93,19 @@ def roast():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
             file.save(temp_pdf.name)
             pdf_text = extract_text_from_pdf(temp_pdf.name)
-
         os.unlink(temp_pdf.name)
-
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
     if not pdf_text:
-        return jsonify({
-            "success": False,
-            "error": "Impossible d'extraire du texte depuis le PDF"
-        }), 400
+        return jsonify({"success": False, "error": "Impossible d'extraire du texte depuis le PDF"}), 400
 
     roast_text = generate_roast_from_text(pdf_text)
 
-    return jsonify({
-        "success": True,
-        "roast": roast_text
-    })
+    return jsonify({"success": True, "roast": roast_text})
 
-@app.route("/health")
+@app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({
-        "status": "healthy",
-        "gemini_configured": model is not None
-    })
+    return jsonify({"status": "healthy", "gemini_configured": model is not None})
 
-# IMPORTANT : Vercel détecte automatiquement "app"
+# ✅ Pas besoin de route "/" — le HTML est servi statiquement par Vercel

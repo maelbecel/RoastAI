@@ -12,7 +12,6 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app)
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 

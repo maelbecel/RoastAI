@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoastAI - LinkedIn Roaster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fire-red: #FF2D00;
+            --fire-orange: #FF6B00;
+            --fire-yellow: #FFB800;
+            --dark-bg: #0A0A0A;
+            --darker-bg: #050505;
+            --text-white: #FFFFFF;
+            --text-gray: #A0A0A0;
+            --glow: rgba(255, 45, 0, 0.5);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--darker-bg);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 45, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 184, 0, 0.05) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite;
+            z-index: 0;
+        }
+        
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(5%, 5%) rotate(3deg); }
+            66% { transform: translate(-5%, 3%) rotate(-3deg); }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 4rem 0 3rem;
+            position: relative;
+        }
+        
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(4rem, 12vw, 9rem);
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, var(--fire-red), var(--fire-orange), var(--fire-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 80px var(--glow);
+            margin-bottom: 0.5rem;
+            animation: flicker 3s ease-in-out infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; text-shadow: 0 0 80px var(--glow); }
+            50% { opacity: 0.95; text-shadow: 0 0 100px var(--glow), 0 0 40px var(--glow); }
+        }
+        
+        .tagline {
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            color: var(--text-gray);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        
+        /* Input Section */
+        .input-section {
+            max-width: 800px;
+            margin: 0 auto 4rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 107, 0, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            color: var(--text-white);
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--fire-orange);
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.3);
+        }
+        
+        input[type="text"]::placeholder {
+            color: var(--text-gray);
+        }
+
+        .file-drop {
+            flex: 1;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 107, 0, 0.35);
+            border-radius: 12px;
+            padding: 1.4rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .file-drop:hover {
+            border-color: var(--fire-orange);
+            box-shadow: 0 0 25px rgba(255, 107, 0, 0.25);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .file-drop.dragover {
+            border-color: var(--fire-orange);
+            background: rgba(255, 107, 0, 0.12);
+            box-shadow: 0 0 35px rgba(255, 107, 0, 0.45);
+        }
+
+        .file-drop-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-white);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .file-icon {
+            font-size: 1.6rem;
+            opacity: 0.9;
+        }
+
+        .file-text {
+            font-size: 1rem;
+            line-height: 1.3;
+        }
+
+        .file-text small {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-top: 0.2rem;
+        }
+
+        
+        button {
+            background: linear-gradient(135deg, var(--fire-red), var(--fire-orange));
+            border: none;
+            border-radius: 12px;
+            padding: 1.2rem 2.5rem;
+            color: var(--text-white);
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 45, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-random {
+            background: linear-gradient(135deg, #444, #666);
+            width: 100%;
+        }
+        
+        .btn-random:hover {
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+        
+        /* Results Section */
+        .results {
+            max-width: 900px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .roast-card {
+            background: linear-gradient(135deg, rgba(255, 45, 0, 0.1), rgba(255, 107, 0, 0.05));
+            border: 2px solid rgba(255, 107, 0, 0.3);
+            border-radius: 24px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(255, 45, 0, 0.2);
+        }
+        
+        .roast-card::before {
+            content: '🔥';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 15rem;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--fire-orange);
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(255, 107, 0, 0.4);
+        }
+        
+        .profile-pic-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--fire-red), var(--fire-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border: 4px solid var(--fire-yellow);
+            box-shadow: 0 10px 30px rgba(255, 107, 0, 0.4);
+        }
+        
+        .profile-info h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: var(--text-white);
+        }
+        
+        .profile-info p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+        }
+        
+        .roast-text {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: var(--text-white);
+            position: relative;
+            z-index: 1;
+            font-weight: 400;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            border-left: 4px solid var(--fire-orange);
+        }
+        
+        .roast-text::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--fire-orange);
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-family: Georgia, serif;
+            opacity: 0.5;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 107, 0, 0.1);
+            border-top: 4px solid var(--fire-orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        /* Error State */
+        .error {
+            background: rgba(255, 45, 0, 0.1);
+            border: 2px solid var(--fire-red);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: var(--fire-red);
+            text-align: center;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .input-section {
+                padding: 2rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .roast-text {
+                font-size: 1.2rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">ROASTAI</h1>
+            <p class="tagline">Ton profil LinkedIn n'est pas prêt</p>
+        </header>
+        
+        <section class="input-section">
+            <div class="input-group">
+                <div class="file-drop" id="fileDrop">
+                    <input 
+                        type="file"
+                        id="pdfFile"
+                        accept="application/pdf"
+                        hidden
+                    >
+                    <p id="fileLabel">📄 Glisse un CV ou un LinkedIn PDF ici<br>ou clique pour sélectionner</p>
+                </div>
+                <button id="roastBtn" onclick="roastProfile()">
+                    <span>🔥 Roast</span>
+                </button>
+            </div>
+        </section>
+        
+        <section class="results" id="results"></section>
+    </div>
+
+    <script>
+    const API_URL = 'http://localhost:5000';
+    
+    async function roastProfile() {
+        const fileInput = document.getElementById('pdfFile');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            showError('Merci de déposer un CV ou un PDF LinkedIn');
+            return;
+        }
+
+        if (file.type !== 'application/pdf') {
+            showError('Le fichier doit être un PDF');
+            return;
+        }
+
+        showLoading();
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${API_URL}/api/roast`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                displayRoast(data);
+            } else {
+                showError(data.error || 'Une erreur est survenue');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Impossible de se connecter au serveur. Assurez-vous que le backend est lancé.');
+        }
+    }
+    
+    async function roastRandom() {
+        showLoading();
+        
+        try {
+            const response = await fetch(`${API_URL}/api/random`);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayRoast(data);
+            } else {
+                showError(data.error || 'Une erreur est survenue');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Impossible de se connecter au serveur. Assurez-vous que le backend est lancé.');
+        }
+    }
+    
+    function showLoading() {
+        const results = document.getElementById('results');
+        results.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">Préparation du roast... 🔥</p>
+            </div>
+        `;
+        results.classList.add('show');
+    }
+    
+    function displayRoast(data) {
+        const results = document.getElementById('results');
+        
+        const profilePic = data.profile_picture 
+            ? `<img src="${data.profile_picture}" alt="${data.profile_name}" class="profile-pic">`
+            : `<div class="profile-pic-placeholder">👤</div>`;
+        
+        results.innerHTML = `
+            <div class="roast-card">
+                <div class="profile-header">
+                    ${profilePic}
+                    <div class="profile-info">
+                        <h2>${data.profile_name}</h2>
+                        ${data.profile_headline ? `<p>${data.profile_headline}</p>` : ''}
+                    </div>
+                </div>
+                <div class="roast-text">${data.roast}</div>
+            </div>
+        `;
+        
+        results.classList.add('show');
+    }
+    
+    function showError(message) {
+        const results = document.getElementById('results');
+        results.innerHTML = `
+            <div class="error">
+                <strong>❌ Erreur</strong><br>
+                ${message}
+            </div>
+        `;
+        results.classList.add('show');
+    }
+
+    // ===== Gestion du glisser-déposer et clic sur la zone =====
+    const fileDrop = document.getElementById("fileDrop");
+    const pdfFile = document.getElementById("pdfFile");
+    const fileLabel = document.getElementById("fileLabel");
+
+    fileDrop.addEventListener("click", () => {
+        pdfFile.click();
+    });
+
+    pdfFile.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        updateFileLabel(file);
+    });
+
+    fileDrop.addEventListener("dragover", (event) => {
+        event.preventDefault();
+    });
+
+    fileDrop.addEventListener("dragleave", () => {
+        // pas d'effet visuel nécessaire si pas de CSS
+    });
+
+    fileDrop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            pdfFile.files = event.dataTransfer.files; // met à jour l'input pour roastProfile()
+            updateFileLabel(file);
+        }
+    });
+
+    function updateFileLabel(file) {
+        if (!file) return;
+        if (file.type !== "application/pdf") {
+            alert("Le fichier doit être un PDF.");
+            return;
+        }
+        fileLabel.textContent = `📄 Fichier sélectionné : ${file.name}`;
+    }
+
+    // Allow Enter key to submit
+    const profileUrlInput = document.getElementById('profileUrl');
+    if (profileUrlInput) {
+        profileUrlInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                roastProfile();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
